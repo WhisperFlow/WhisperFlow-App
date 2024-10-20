@@ -1,20 +1,58 @@
-import { Text, StyleSheet, View } from 'react-native';
+import 'react-native-gesture-handler';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
-export default function HomeScreen() {
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
+
+export default function App() {
+  const pressed = useSharedValue<boolean>(false);
+
+  const tap = Gesture.LongPress()
+    .onBegin(() => {
+      pressed.value = true;
+    })
+    .onBegin(() => {
+      pressed.value = true;
+    })
+    .onFinalize(() => {
+      pressed.value = false;
+    });
+
+  const animatedStyles = useAnimatedStyle(() => ({
+    backgroundColor: pressed.value ? '#CC3363' : '#B58DF1',
+    transform: [{ scale: withTiming(pressed.value ? 1.2 : 1) }],
+  }));
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>home</Text>
-    </View>
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.container}>
+        <GestureDetector gesture={tap}>
+          <Animated.View style={[styles.circle, animatedStyles]} />
+        </GestureDetector>
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
-  text: {
-    textAlign: 'center',
+  circle: {
+    height: 120,
+    width: 120,
+    borderRadius: 500,
   },
 });
