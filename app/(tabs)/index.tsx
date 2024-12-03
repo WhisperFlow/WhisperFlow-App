@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -13,13 +13,28 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 
+import { Audio } from "expo-av";
+
 export default function App() {
   const pressed = useSharedValue<boolean>(false);
+  const [isAllowRecord, setAllowRecord] = useState("undetermined");
+
+  useEffect(() => {
+    const requestPermissions = async () => {
+      try {
+        const response = await Audio.requestPermissionsAsync();
+        // console.log("Permissions response", response);
+        // setAllowRecord(response.status);
+      } catch (error) {
+        // setAllowRecord('error');
+        // console.error("Failed to get permissions", error);
+      }
+    };
+
+    requestPermissions();
+  }, []);
 
   const tap = Gesture.LongPress()
-    .onBegin(() => {
-      pressed.value = true;
-    })
     .onBegin(() => {
       pressed.value = true;
     })
