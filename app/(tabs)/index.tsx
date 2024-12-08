@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Button, Pressable, Platform, UIManager } from 'react-native';
+import { StyleSheet, View, Button, Pressable, Text, FlatList } from 'react-native';
 import { Audio } from "expo-av";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
   const [pressed, setPressed] = useState<boolean>(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isAllowRecord, setAllowRecord] = useState<Audio.PermissionStatus | 'undetermined'>("undetermined");
   const [recordingStatus, setRecordingStatus] = useState<Audio.RecordingStatus | null>(null);
+  const [recordList, setRecordings] = useState<{ uri: string; name: string; type: string }[]>([]);
 
   useEffect(() => {
     const requestPermissions = async () => {
@@ -19,10 +21,22 @@ export default function App() {
       }
     };
 
+    const loadRecordings = async () => {
+      try {
+        const storedUris = await AsyncStorage.getItem("recorded-uris");
+        if (storedUris) {
+          setRecordings(JSON.parse(storedUris));
+        }
+      } catch (error) {
+        console.error("Failed to load recordList", error);
+      }
+    };
+
     requestPermissions();
+    loadRecordings();
   }, []);
 
- /** 开始录音 */
+  /** 开始录音 */
   const startRecording = async () => {
     try {
       if (recording && recordingStatus?.canRecord) {
@@ -44,33 +58,53 @@ export default function App() {
       console.error("Failed to start recording", JSON.stringify(error));
     }
   };
-  
+
   /** 停止录音 */
   const stopRecording = async () => {
     if (!recording) return;
 
     try {
       await recording.stopAndUnloadAsync();
-      console.log(`Recorded URI: ${recording.getURI()}`);
+      const uri = recording.getURI();
+      if (uri) {
+        const recordingUri = {
+          uri: uri,
+          name: `recording-${Date.now()}.m4a`,
+          type: "audio/m4a",
+        };
+
+        const storedUris = await AsyncStorage.getItem("recorded-uris");
+        const uriList = storedUris ? JSON.parse(storedUris) : [];
+
+        uriList.push(recordingUri);
+        await AsyncStorage.setItem("recorded-uris", JSON.stringify(uriList));
+        setRecordings(uriList); // 更新录音列表
+      }
+
     } catch (error) {
-      console.error("Failed to stop recording", error);
+      console.error("Failed to stop recording", JSON.stringify(error));
     }
   };
 
   /** 播放录音 */
-  const playSound = async () => {
-    if (!recording || !recordingStatus?.isDoneRecording) return;
-
+  const playSound = async (uri: string) => {
     try {
-      const { sound } = await recording.createNewLoadedSoundAsync();
+      const { sound } = await Audio.Sound.createAsync({ uri });
       await sound.playAsync();
     } catch (error) {
       console.error("Failed to play sound", error);
     }
   };
 
-  const getRecordPath = () => {
-    console.log("Recorded URI: ", recording?.getURI());
+  /** 删除录音 */
+  const deleteRecording = async (uri: string) => {
+    try {
+      const updatedList = recordList.filter(record => record.uri !== uri);
+      setRecordings(updatedList);
+      await AsyncStorage.setItem("recorded-uris", JSON.stringify(updatedList));
+    } catch (error) {
+      console.error("Failed to delete recording", error);
+    }
   };
 
   const circleColor = () => {
@@ -97,23 +131,40 @@ export default function App() {
 
   return (
     <View style={styles.height_100}>
-      <Button title="Get Record Path" onPress={getRecordPath} />
-      <Button title="Play Sound" onPress={playSound} />
       <View style={styles.container}>
         <Pressable onPressIn={onPressIn} onPressOut={onPressOut}>
           <View style={[styles.circle, animatedStyles]} />
         </Pressable>
       </View>
+      {recordList.length > 0 &&
+        <FlatList
+          data={recordList}
+          keyExtractor={(item) => item.uri}
+          renderItem={({ item }) => (
+            <View style={styles.recordingItem}>
+              <Text>{item.name}</Text>
+              <View style={styles.actions}>
+                <View style={styles.buttonContainer}>
+                  <Button title="Delete" onPress={() => deleteRecording(item.uri)} />
+                </View>
+                <View style={styles.buttonContainer}>
+                  <Button title="Play" onPress={() => playSound(item.uri)} />
+                </View>
+              </View>
+            </View>
+          )}
+          style={styles.flatList}
+        />
+      }
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: '50%',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
   },
   circle: {
     height: 120,
@@ -122,5 +173,24 @@ const styles = StyleSheet.create({
   },
   height_100: {
     height: '100%',
+  },
+  flatList: {
+    borderTopWidth: 1,
+    borderColor: '#ccc',
+    height: '50%',
+  },
+  recordingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  actions: {
+    flexDirection: 'row',
+  },
+  buttonContainer: {
+    marginHorizontal: 5,
   },
 });
