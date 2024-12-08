@@ -1,24 +1,9 @@
-import 'react-native-gesture-handler';
-import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
-
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Button, Pressable, Platform, UIManager } from 'react-native';
 import { Audio } from "expo-av";
 
 export default function App() {
-  const pressed = useSharedValue<boolean>(false);
-
+  const [pressed, setPressed] = useState<boolean>(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isAllowRecord, setAllowRecord] = useState<Audio.PermissionStatus | 'undetermined'>("undetermined");
   const [recordingStatus, setRecordingStatus] = useState<Audio.RecordingStatus | null>(null);
@@ -30,7 +15,6 @@ export default function App() {
         console.log("Permissions response", response);
         setAllowRecord(response.status);
       } catch (error) {
-        // setAllowRecord('error');
         console.error("Failed to get permissions", error);
       }
     };
@@ -38,7 +22,7 @@ export default function App() {
     requestPermissions();
   }, []);
 
-  /** 开始录音 */
+ /** 开始录音 */
   const startRecording = async () => {
     try {
       if (recording && recordingStatus?.canRecord) {
@@ -50,19 +34,17 @@ export default function App() {
         allowsRecordingIOS: true,
       });
 
-      // 创建并准备录音 
       const newRecording = new Audio.Recording();
       setRecording(newRecording);
 
       await newRecording.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-      newRecording.setOnRecordingStatusUpdate(setRecordingStatus);// 设置录音状态更新的回调函数
+      newRecording.setOnRecordingStatusUpdate(setRecordingStatus);
       await newRecording.startAsync();
     } catch (error) {
-      console.error("Failed to start recording", error);
-      // todo: 错误通知
+      console.error("Failed to start recording", JSON.stringify(error));
     }
   };
-
+  
   /** 停止录音 */
   const stopRecording = async () => {
     if (!recording) return;
@@ -72,56 +54,57 @@ export default function App() {
       console.log(`Recorded URI: ${recording.getURI()}`);
     } catch (error) {
       console.error("Failed to stop recording", error);
-      // todo: 错误通知
     }
   };
 
   /** 播放录音 */
   const playSound = async () => {
-    if (!recording || !recordingStatus?.isDoneRecording) return
+    if (!recording || !recordingStatus?.isDoneRecording) return;
 
     try {
       const { sound } = await recording.createNewLoadedSoundAsync();
       await sound.playAsync();
     } catch (error) {
       console.error("Failed to play sound", error);
-      // todo: 错误通知
     }
-  }
+  };
 
-  const tap = Gesture.LongPress()
-    .onBegin(() => {
-      pressed.value = true;
-      startRecording();
-    })
-    .onFinalize(() => {
-      pressed.value = false;
-      stopRecording();
-    });
+  const getRecordPath = () => {
+    console.log("Recorded URI: ", recording?.getURI());
+  };
 
-  const circleColor = useDerivedValue(() => {
+  const circleColor = () => {
     if (isAllowRecord === "granted") {
-      return pressed.value ? '#CC3363' : '#B58DF1';
+      return pressed ? '#CC3363' : '#B58DF1';
     }
     return '#A9A9A9';
-  });
+  };
 
-  const animatedStyles = useAnimatedStyle(() => {
-    return {
-      backgroundColor: circleColor.value,
-      transform: [{ scale: withTiming(pressed.value ? 1.2 : 1) }],
-    };
-  });
+  const animatedStyles = {
+    backgroundColor: circleColor(),
+    transform: [{ scale: pressed ? 1.2 : 1 }],
+  };
 
+  const onPressIn = () => {
+    setPressed(true);
+    startRecording();
+  };
+
+  const onPressOut = () => {
+    setPressed(false);
+    stopRecording();
+  };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <View style={styles.height_100}>
+      <Button title="Get Record Path" onPress={getRecordPath} />
+      <Button title="Play Sound" onPress={playSound} />
       <View style={styles.container}>
-        <GestureDetector gesture={tap}>
-          <Animated.View style={[styles.circle, animatedStyles]} />
-        </GestureDetector>
+        <Pressable onPressIn={onPressIn} onPressOut={onPressOut}>
+          <View style={[styles.circle, animatedStyles]} />
+        </Pressable>
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
@@ -136,5 +119,8 @@ const styles = StyleSheet.create({
     height: 120,
     width: 120,
     borderRadius: 500,
+  },
+  height_100: {
+    height: '100%',
   },
 });

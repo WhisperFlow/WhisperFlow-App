@@ -1,7 +1,7 @@
 {
   "name": "whisperflow-app",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -12,6 +12,8 @@
     "prebuild:ios": "npx expo prebuild --clean --platform ios",
     "prebuild:android:run": "expo run:android",
     "prebuild:ios:run": "expo run:ios",
+    "eas:build:android": "eas build --platform android",
+    "eas:build:ios": "eas build --platform all",
     "test": "jest --watchAll",
     "lint": "expo lint"
   },
@@ -33,9 +35,8 @@
     "expo-web-browser": "~14.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-error-boundary": "^4.1.2",
     "react-native": "0.76.3",
-    "react-native-gesture-handler": "~2.21.2",
-    "react-native-reanimated": "~3.16.3",
     "react-native-safe-area-context": "4.14.0",
     "react-native-screens": "4.3.0",
     "react-native-web": "~0.19.13"
