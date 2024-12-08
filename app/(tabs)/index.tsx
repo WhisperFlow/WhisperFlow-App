@@ -58,7 +58,7 @@ export default function App() {
       newRecording.setOnRecordingStatusUpdate(setRecordingStatus);// 设置录音状态更新的回调函数
       await newRecording.startAsync();
     } catch (error) {
-      console.error("Failed to start recording", error);
+      console.error("Failed to start recording", JSON.stringify(error));
       // todo: 错误通知
     }
   };
@@ -95,12 +95,20 @@ export default function App() {
 
   const tap = Gesture.LongPress()
     .onBegin(() => {
+      try {
+        startRecording();
+      } catch (error) {
+        console.error("Failed to startRecording", JSON.stringify(error));
+      }
       pressed.value = true;
-      startRecording();
     })
     .onFinalize(() => {
       pressed.value = false;
-      stopRecording();
+      try {
+        stopRecording();
+      } catch (error) {
+        console.error("Failed to stopRecording", error);
+      }
     });
 
   const circleColor = useDerivedValue(() => {
