@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Button } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useDerivedValue,
@@ -89,6 +89,10 @@ export default function App() {
     }
   }
 
+  const getRecordPath = () => {
+    console.log("Recorded URI: ", recording?.getURI());
+  }
+
   const tap = Gesture.LongPress()
     .onBegin(() => {
       pressed.value = true;
@@ -115,13 +119,16 @@ export default function App() {
 
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <View style={styles.container}>
-        <GestureDetector gesture={tap}>
-          <Animated.View style={[styles.circle, animatedStyles]} />
-        </GestureDetector>
-      </View>
-    </GestureHandlerRootView>
+    <View style={styles.height_100}>
+      <Button title="Get Record Path" onPress={getRecordPath} />
+      <GestureHandlerRootView style={styles.container}>
+        <View style={styles.container}>
+          <GestureDetector gesture={tap}>
+            <Animated.View style={[styles.circle, animatedStyles]} />
+          </GestureDetector>
+        </View>
+      </GestureHandlerRootView>
+    </View>
   );
 }
 
@@ -136,5 +143,8 @@ const styles = StyleSheet.create({
     height: 120,
     width: 120,
     borderRadius: 500,
+  },
+  height_100: {
+    height: '100%',
   },
 });
