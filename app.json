@@ -2,7 +2,7 @@
   "expo": {
     "name": "WhisperFlow-App",
     "slug": "WhisperFlow-App",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "WhisperFlowApp",
@@ -14,7 +14,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rss1102.WhisperFlowApp"
     },
     "android": {
       "adaptiveIcon": {
