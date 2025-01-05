@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Button, Pressable, Text, FlatList } from 'react-native';
 import { Audio } from "expo-av";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getContentUriAsync, getInfoAsync, readAsStringAsync } from 'expo-file-system';
 
 export default function App() {
   const [pressed, setPressed] = useState<boolean>(false);
@@ -25,6 +26,12 @@ export default function App() {
       try {
         const storedUris = await AsyncStorage.getItem("recorded-uris");
         if (storedUris) {
+          const recordList = JSON.parse(storedUris);
+          console.log("Record list", recordList[0]);
+          console.log("Record 1", await getInfoAsync(recordList[0].uri));
+
+          // const recordFile = await readAsStringAsync(recordList[0].uri, { encoding: 'base64' });
+          // console.log("Recording stopped and stored at", recordFile);
           setRecordings(JSON.parse(storedUris));
         }
       } catch (error) {
