@@ -3,11 +3,17 @@
   "version": "0.0.0",
   "type": "module",
   "description": "",
-  "main": "dist/index.js",
+  "main": "./index.tsx",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "rollup -c"
   },
-  "keywords": [], 
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
