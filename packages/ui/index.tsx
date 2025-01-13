@@ -1,1 +1,1 @@
-export { WFButton } from './components/WFButton';
+export { WFButton } from './components/Button';

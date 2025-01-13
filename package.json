@@ -27,6 +27,10 @@
     "react-native-safe-area-context": "4.14.0",
     "react-native-screens": "4.3.0",
     "react-native-web": "~0.19.13"
-
+  },
+  "scripts": {
+    "example:android": "pnpm -C example run android",
+    "example:ios": "pnpm -C example run ios",
+    "example:web": "pnpm -C example run web"
   }
 }

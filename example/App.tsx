@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { WFButton } from '@whisper-flow-app/ui';
 
@@ -8,8 +7,13 @@ export default function App() {
   };
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <WFButton title='按钮' onPress={onPress} />
+      <Text>size</Text>
+      <WFButton onPress={onPress} size='small'>按钮</WFButton>
+      <WFButton onPress={onPress} size='medium'>按钮</WFButton>
+      <WFButton onPress={onPress} size='large'>按钮</WFButton>
+      <WFButton loading>按钮</WFButton>
+      <WFButton size='medium'>按钮</WFButton>
+      <WFButton size='large'>按钮</WFButton>
     </View>
   );
 }
